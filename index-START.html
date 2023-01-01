@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <form class="search-form">
+    <input type="text" class="search" placeholder="City or State">
+    <ul class="suggestions">
+      <li>Filter for a city</li>
+      <li>or a state</li>
+    </ul>
+  </form>
+  <script>
+    const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+    const cities = [];
+    fetch(endpoint)
+      .then(blob => blob.json())
+      .then(res => cities.push(...res));
+
+    function matchHelper(wordToMatch, cities) {
+      const regEx = new RegExp(wordToMatch, 'gi'); //g is to find all matching results and i for case insensitive
+
+      const matchedRes = cities.filter(place => {
+        return place.city.match(regEx) || place.state.match(regEx);
+      });
+
+      return matchedRes;
+    }
+
+    function showMatches() {
+      const matches = matchHelper(this.value, cities);
+
+      const html = matches.map(place => {
+        const regExNew = new RegExp(this.value, 'gi');
+        const matchedCity = place.city.replace(regExNew, `<span class="hl">${this.value}</span>`);
+        const matchedState = place.state.replace(regExNew, `<span class="hl">${this.value}</span>`)
+        return `
+      <li>
+        <span class="name">${matchedCity}, ${matchedState}</span>  
+        <span class="population">${place.population}</span>
+      </li>
+    `;
+      }).join(' ');
+
+      suggestionListElement.innerHTML = html;
+    }
+
+    const inputElement = document.querySelector('.search');
+    inputElement.addEventListener('change', showMatches); //will fire when clicked outside after typing the input
+    inputElement.addEventListener('keyup', showMatches); //will fire each time a key is pressed inside input
+
+    const suggestionListElement = document.querySelector('.suggestions');
+
+  </script>
+</body>
+
+</html>
